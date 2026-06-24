@@ -175,6 +175,17 @@ table.tbl select{background:#fff;border:1px solid var(--line);border-radius:5px;
   </div>
  </details>
 
+ <details class="panel edit-only">
+  <summary>Credenciales de editor</summary>
+  <div style="padding:0 16px 16px">
+   <p class="mini" style="margin-bottom:8px">Cambia la contraseña de editor. Aplica para todos; compártela solo con quienes deban editar.</p>
+   <div class="ctrl-grid" style="grid-template-columns:1fr 1fr auto;align-items:end">
+    <div class="ctrl"><label>Nueva contraseña</label><input type="text" id="np1" placeholder="Nueva contraseña"></div>
+    <div class="ctrl"><label>Confirmar</label><input type="text" id="np2" placeholder="Repite la contraseña"></div>
+    <button class="btn" onclick="changePass()" style="height:38px">Cambiar contraseña</button>
+   </div>
+  </div>
+ </details>
  <div class="legend">
   <span><i class="dot" style="background:var(--disp)"></i> Disponible</span>
   <span><i class="dot" style="background:var(--apar)"></i> Apartado</span>
@@ -257,6 +268,18 @@ async function editorLogin(){
  }catch(e){alert('Error de red: '+e);}
 }
 function setLoginBtn(){const b=document.getElementById('loginBtn');if(b)b.textContent=EDITOR?'🔓 Editor activo (salir)':'🔒 Entrar como editor';}
+async function changePass(){
+ if(!EDITOR){alert('Entra como editor primero');return;}
+ const n1=document.getElementById('np1').value, n2=document.getElementById('np2').value;
+ if(!n1||n1.length<4){alert('La contraseña debe tener al menos 4 caracteres');return;}
+ if(n1!==n2){alert('Las contraseñas no coinciden');return;}
+ try{const res=await fetch(FN_URL,{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},body:JSON.stringify({pass:EDITPASS,action:'change_password',payload:{newPass:n1}})});
+  const j=await res.json().catch(()=>({error:'respuesta inválida'}));
+  if(!res.ok||j.error){alert('Error: '+(j.error||res.status));return;}
+  EDITPASS=n1; document.getElementById('np1').value='';document.getElementById('np2').value='';
+  alert('Contraseña de editor actualizada. Compártela solo con los editores.');
+ }catch(e){alert('Error de red: '+e);}
+}
 function fmt(n){return '$'+Math.round(n||0).toLocaleString('es-MX');}
 function fmt2(n){return (n||0).toLocaleString('es-MX',{maximumFractionDigits:2});}
 function today(){return new Date().toISOString().slice(0,10);}
